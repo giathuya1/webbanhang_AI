@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>User & Role Management</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+<style>
+body { background:#f4f6f9; }
+.sidebar {
+  width:230px; min-height:100vh;
+  background:#212529; color:#fff;
+}
+.sidebar a {
+  display:block; padding:12px 16px;
+  color:#adb5bd; text-decoration:none;
+  cursor: pointer;
+}
+.sidebar a:hover, .sidebar a.active {
+  background:#343a40; color:#fff;
+}
+.content { padding:24px; flex:1; }
+.card { border-radius:12px; }
+.badge-admin { background:#dc3545; }
+.badge-staff { background:#0d6efd; }
+.badge-warehouse { background:#6c757d; }
+.badge-active { background:#198754; }
+.badge-inactive { background:#dc3545; }
+.search-box { max-width: 300px; }
+</style>
+</head>
+
+<body>
+<div class="d-flex">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h5 class="text-center py-3">ADMIN PANEL</h5>
+  <a class="active" data-section="users"><i class="fa fa-users me-2"></i>Users</a>
+  <a data-section="roles"><i class="fa fa-user-shield me-2"></i>Roles</a>
+</div>
+
+<!-- CONTENT -->
+<div class="flex-fill content">
+
+<!-- USERS SECTION -->
+<div id="usersSection">
+<div class="card mb-4">
+<div class="card-header d-flex justify-content-between align-items-center">
+  <h5 class="mb-0">User Management</h5>
+  <div class="d-flex gap-2">
+    <!-- SEARCH BOX -->
+    <div class="input-group search-box">
+      <input type="text" class="form-control" id="searchUser" placeholder="Tìm kiếm username...">
+      <button class="btn btn-outline-secondary" type="button" id="btnSearch">
+        <i class="fa fa-search"></i>
+      </button>
+    </div>
+    <!-- FILTER STATUS -->
+    <select class="form-select" id="filterStatus" style="width: 150px;">
+      <option value="all">Tất cả</option>
+      <option value="1">Hoạt động</option>
+      <option value="0">Không hoạt động</option>
+    </select>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal" id="btnAddUser">
+      <i class="fa fa-plus"></i> Add User
+    </button>
+  </div>
+</div>
+
+<div class="card-body">
+<table class="table table-hover align-middle">
+<thead class="table-dark">
+<tr>
+  <th>ID</th>
+  <th>Username</th>
+  <th>Role</th>
+  <th>Status</th>
+  <th>Created At</th>
+  <th width="150">Action</th>
+</tr>
+</thead>
+<tbody id="userTable">
+<!-- Data sẽ được load từ JavaScript -->
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- ROLES SECTION -->
+<div id="rolesSection" style="display:none;">
+<div class="card">
+<div class="card-header d-flex justify-content-between align-items-center">
+  <h5 class="mb-0">Role Management</h5>
+  <div class="d-flex gap-2">
+    <!-- SEARCH ROLE -->
+    <div class="input-group search-box">
+      <input type="text" class="form-control" id="searchRole" placeholder="Tìm kiếm role...">
+      <button class="btn btn-outline-secondary" type="button" id="btnSearchRole">
+        <i class="fa fa-search"></i>
+      </button>
+    </div>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#roleModal" id="btnAddRole">
+      <i class="fa fa-plus"></i> Add Role
+    </button>
+  </div>
+</div>
+
+<div class="card-body">
+<table class="table table-bordered align-middle">
+<thead class="table-secondary">
+<tr>
+  <th>ID</th>
+  <th>Role Name</th>
+  <th>Total Users</th>
+  <th width="100">Action</th>
+</tr>
+</thead>
+<tbody id="roleTable">
+<!-- Data sẽ được load từ JavaScript -->
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- USER MODAL -->
+<div class="modal fade" id="userModal">
+<div class="modal-dialog">
+<form class="modal-content" id="userForm">
+<div class="modal-header">
+  <h5 class="modal-title">Add User</h5>
+  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+  <input type="hidden" id="userId">
+  <div class="mb-3">
+    <label class="form-label">Username</label>
+    <input type="text" class="form-control" id="username" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Password</label>
+    <input type="password" class="form-control" id="password" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Role</label>
+    <select class="form-select" id="roleSelect">
+      <!-- Options sẽ được load từ JavaScript -->
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Status</label>
+    <select class="form-select" id="statusSelect">
+      <option value="1">Hoạt động</option>
+      <option value="0">Không hoạt động</option>
+    </select>
+  </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+  <button type="submit" class="btn btn-primary">Save</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- ROLE MODAL -->
+<div class="modal fade" id="roleModal">
+<div class="modal-dialog">
+<form class="modal-content" id="roleForm">
+<div class="modal-header">
+  <h5 class="modal-title">Add Role</h5>
+  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+  <input type="hidden" id="roleId">
+  <div class="mb-3">
+    <label class="form-label">Role Name</label>
+    <input type="text" class="form-control" id="roleName" required>
+  </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+  <button type="submit" class="btn btn-success">Save</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- JS -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// ============ CẤU HÌNH API ============
+const API_URL = 'api';
+
+// ============ BIẾN LƯU TRỮ ============
+let roles = [];
+let users = [];
+
+// ============ HÀM TIỆN ÍCH ============
+function getRoleName(roleId) {
+  const role = roles.find(r => r.id == roleId);
+  return role ? role.name : 'Unknown';
+}
+
+function getBadgeClass(roleName) {
+  const badges = {
+    'admin': 'badge-admin',
+    'staff': 'badge-staff',
+    'warehouse': 'badge-warehouse'
+  };
+  return badges[roleName] || 'bg-secondary';
+}
+
+function getStatusBadge(status) {
+  if (status == 1) {
+    return '<span class="badge badge-active">Hoạt động</span>';
+  }
+  return '<span class="badge badge-inactive">Không hoạt động</span>';
+}
+
+// ============ API CALLS ============
+// Load Users từ API
+function loadUsers() {
+  const search = $('#searchUser').val().trim();
+  const status = $('#filterStatus').val();
+  
+  let url = `${API_URL}/users.php?`;
+  if (search) url += `search=${encodeURIComponent(search)}&`;
+  if (status !== 'all') url += `status=${status}`;
+  
+  $.ajax({
+    url: url,
+    method: 'GET',
+    success: function(response) {
+      if (response.success) {
+        users = response.data;
+        renderUserTable();
+      }
+    },
+    error: function(xhr) {
+      console.error('Lỗi khi load users:', xhr.responseText);
+      alert('Lỗi khi tải danh sách user');
+    }
+  });
+}
+
+// Load Roles từ API
+function loadRoles() {
+  const search = $('#searchRole').val().trim();
+  
+  let url = `${API_URL}/roles.php?`;
+  if (search) url += `search=${encodeURIComponent(search)}`;
+  
+  $.ajax({
+    url: url,
+    method: 'GET',
+    success: function(response) {
+      if (response.success) {
+        roles = response.data;
+        renderRoleTable();
+        renderRoleOptions();
+      }
+    },
+    error: function(xhr) {
+      console.error('Lỗi khi load roles:', xhr.responseText);
+      alert('Lỗi khi tải danh sách role');
+    }
+  });
+}
+
+// ============ RENDER BẢNG ============
+function renderUserTable() {
+  let html = '';
+  
+  if (users.length === 0) {
+    html = '<tr><td colspan="6" class="text-center text-muted">Không tìm thấy user nào</td></tr>';
+  } else {
+    users.forEach(user => {
+      const roleName = user.role_name || getRoleName(user.role_id);
+      const createdAt = user.created_at ? user.created_at.split(' ')[0] : '';
+      html += `
+        <tr data-id="${user.id}">
+          <td>${user.id}</td>
+          <td>${user.username}</td>
+          <td><span class="badge ${getBadgeClass(roleName)}">${roleName}</span></td>
+          <td>${getStatusBadge(user.status)}</td>
+          <td>${createdAt}</td>
+          <td>
+            <button class="btn btn-sm btn-${user.status == 1 ? 'secondary' : 'success'} btn-toggle-status" data-id="${user.id}" data-status="${user.status}" title="${user.status == 1 ? 'Vô hiệu hóa' : 'Kích hoạt'}">
+              <i class="fa fa-${user.status == 1 ? 'ban' : 'check'}"></i>
+            </button>
+            <button class="btn btn-sm btn-warning btn-edit-user" data-id="${user.id}" title="Sửa">
+              <i class="fa fa-edit"></i>
+            </button>
+            <button class="btn btn-sm btn-danger btn-delete-user" data-id="${user.id}" title="Xóa">
+              <i class="fa fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+  }
+  $('#userTable').html(html);
+}
+
+function renderRoleTable() {
+  let html = '';
+  
+  if (roles.length === 0) {
+    html = '<tr><td colspan="4" class="text-center text-muted">Không tìm thấy role nào</td></tr>';
+  } else {
+    roles.forEach(role => {
+      html += `
+        <tr data-id="${role.id}">
+          <td>${role.id}</td>
+          <td>${role.name}</td>
+          <td>${role.user_count || 0}</td>
+          <td>
+            <button class="btn btn-sm btn-danger btn-delete-role" data-id="${role.id}" data-count="${role.user_count || 0}">
+              <i class="fa fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+  }
+  $('#roleTable').html(html);
+}
+
+function renderRoleOptions() {
+  let html = '';
+  roles.forEach(role => {
+    html += `<option value="${role.id}">${role.name}</option>`;
+  });
+  $('#roleSelect').html(html);
+}
+
+// ============ XỬ LÝ TÌM KIẾM ============
+$('#searchUser').on('keyup', function(e) {
+  if (e.key === 'Enter') {
+    loadUsers();
+  }
+});
+
+$('#btnSearch').on('click', function() {
+  loadUsers();
+});
+
+$('#filterStatus').on('change', function() {
+  loadUsers();
+});
+
+$('#searchRole').on('keyup', function(e) {
+  if (e.key === 'Enter') {
+    loadRoles();
+  }
+});
+
+$('#btnSearchRole').on('click', function() {
+  loadRoles();
+});
+
+// ============ XỬ LÝ USER ============
+// Toggle Status
+$(document).on('click', '.btn-toggle-status', function() {
+  const id = $(this).data('id');
+  const currentStatus = $(this).data('status');
+  const newStatus = currentStatus == 1 ? 0 : 1;
+  
+  $.ajax({
+    url: `${API_URL}/users.php`,
+    method: 'PUT',
+    contentType: 'application/json',
+    data: JSON.stringify({ id: id, status: newStatus }),
+    success: function(response) {
+      if (response.success) {
+        const statusText = newStatus == 1 ? 'kích hoạt' : 'vô hiệu hóa';
+        alert(`Đã ${statusText} user thành công`);
+        loadUsers();
+      } else {
+        alert(response.message);
+      }
+    },
+    error: function(xhr) {
+      const res = JSON.parse(xhr.responseText);
+      alert(res.message || 'Lỗi khi cập nhật status');
+    }
+  });
+});
+
+// Thêm/Sửa User
+$('#userForm').on('submit', function(e) {
+  e.preventDefault();
+  
+  const id = $('#userId').val();
+  const username = $('#username').val().trim();
+  const password = $('#password').val();
+  const role_id = parseInt($('#roleSelect').val());
+  const status = parseInt($('#statusSelect').val());
+  
+  if (!username) {
+    alert('Vui lòng nhập username!');
+    return;
+  }
+  
+  const data = {
+    username: username,
+    role_id: role_id,
+    status: status
+  };
+  
+  if (id) {
+    // Sửa user
+    data.id = parseInt(id);
+    if (password) data.password = password;
+    
+    $.ajax({
+      url: `${API_URL}/users.php`,
+      method: 'PUT',
+      contentType: 'application/json',
+      data: JSON.stringify(data),
+      success: function(response) {
+        if (response.success) {
+          alert('Cập nhật user thành công!');
+          $('#userModal').modal('hide');
+          $('#userForm')[0].reset();
+          $('#userId').val('');
+          loadUsers();
+          loadRoles();
+        } else {
+          alert(response.message);
+        }
+      },
+      error: function(xhr) {
+        const res = JSON.parse(xhr.responseText);
+        alert(res.message || 'Lỗi khi cập nhật user');
+      }
+    });
+  } else {
+    // Thêm user mới
+    if (!password) {
+      alert('Vui lòng nhập password!');
+      return;
+    }
+    data.password = password;
+    
+    $.ajax({
+      url: `${API_URL}/users.php`,
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(data),
+      success: function(response) {
+        if (response.success) {
+          alert('Thêm user thành công!');
+          $('#userModal').modal('hide');
+          $('#userForm')[0].reset();
+          $('#userId').val('');
+          loadUsers();
+          loadRoles();
+        } else {
+          alert(response.message);
+        }
+      },
+      error: function(xhr) {
+        const res = JSON.parse(xhr.responseText);
+        alert(res.message || 'Lỗi khi thêm user');
+      }
+    });
+  }
+});
+
+// Mở modal Edit User
+$(document).on('click', '.btn-edit-user', function() {
+  const id = $(this).data('id');
+  const user = users.find(u => u.id == id);
+  
+  if (user) {
+    $('#userId').val(user.id);
+    $('#username').val(user.username);
+    $('#password').val('');
+    $('#password').removeAttr('required');
+    $('#roleSelect').val(user.role_id);
+    $('#statusSelect').val(user.status);
+    $('.modal-title', '#userModal').text('Edit User');
+    $('#userModal').modal('show');
+  }
+});
+
+// Xóa User
+$(document).on('click', '.btn-delete-user', function() {
+  if (confirm('Bạn có chắc muốn xóa user này?')) {
+    const id = $(this).data('id');
+    
+    $.ajax({
+      url: `${API_URL}/users.php?id=${id}`,
+      method: 'DELETE',
+      success: function(response) {
+        if (response.success) {
+          alert('Xóa user thành công!');
+          loadUsers();
+          loadRoles();
+        } else {
+          alert(response.message);
+        }
+      },
+      error: function(xhr) {
+        const res = JSON.parse(xhr.responseText);
+        alert(res.message || 'Lỗi khi xóa user');
+      }
+    });
+  }
+});
+
+// Reset modal khi mở Add User
+$('#btnAddUser').on('click', function() {
+  $('#userForm')[0].reset();
+  $('#userId').val('');
+  $('#password').attr('required', true);
+  $('#statusSelect').val('1');
+  $('.modal-title', '#userModal').text('Add User');
+});
+
+// ============ XỬ LÝ ROLE ============
+// Thêm Role
+$('#roleForm').on('submit', function(e) {
+  e.preventDefault();
+  
+  const id = $('#roleId').val();
+  const name = $('#roleName').val().trim().toLowerCase();
+  
+  if (!name) {
+    alert('Vui lòng nhập tên role!');
+    return;
+  }
+  
+  if (id) {
+    // Sửa role
+    $.ajax({
+      url: `${API_URL}/roles.php`,
+      method: 'PUT',
+      contentType: 'application/json',
+      data: JSON.stringify({ id: parseInt(id), name: name }),
+      success: function(response) {
+        if (response.success) {
+          alert('Cập nhật role thành công!');
+          $('#roleModal').modal('hide');
+          $('#roleForm')[0].reset();
+          $('#roleId').val('');
+          loadRoles();
+          loadUsers();
+        } else {
+          alert(response.message);
+        }
+      },
+      error: function(xhr) {
+        const res = JSON.parse(xhr.responseText);
+        alert(res.message || 'Lỗi khi cập nhật role');
+      }
+    });
+  } else {
+    // Thêm role mới
+    $.ajax({
+      url: `${API_URL}/roles.php`,
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ name: name }),
+      success: function(response) {
+        if (response.success) {
+          alert('Thêm role thành công!');
+          $('#roleModal').modal('hide');
+          $('#roleForm')[0].reset();
+          $('#roleId').val('');
+          loadRoles();
+        } else {
+          alert(response.message);
+        }
+      },
+      error: function(xhr) {
+        const res = JSON.parse(xhr.responseText);
+        alert(res.message || 'Lỗi khi thêm role');
+      }
+    });
+  }
+});
+
+// Xóa Role
+$(document).on('click', '.btn-delete-role', function() {
+  const id = $(this).data('id');
+  const userCount = $(this).data('count');
+  
+  if (userCount > 0) {
+    alert(`Không thể xóa! Có ${userCount} user đang sử dụng role này.`);
+    return;
+  }
+  
+  if (confirm('Bạn có chắc muốn xóa role này?')) {
+    $.ajax({
+      url: `${API_URL}/roles.php?id=${id}`,
+      method: 'DELETE',
+      success: function(response) {
+        if (response.success) {
+          alert('Xóa role thành công!');
+          loadRoles();
+        } else {
+          alert(response.message);
+        }
+      },
+      error: function(xhr) {
+        const res = JSON.parse(xhr.responseText);
+        alert(res.message || 'Lỗi khi xóa role');
+      }
+    });
+  }
+});
+
+// Reset modal khi mở Add Role
+$('#btnAddRole').on('click', function() {
+  $('#roleForm')[0].reset();
+  $('#roleId').val('');
+  $('.modal-title', '#roleModal').text('Add Role');
+});
+
+// ============ CHUYỂN TAB SIDEBAR ============
+$('.sidebar a').on('click', function() {
+  $('.sidebar a').removeClass('active');
+  $(this).addClass('active');
+  
+  const section = $(this).data('section');
+  if (section === 'users') {
+    $('#usersSection').show();
+    $('#rolesSection').hide();
+  } else {
+    $('#usersSection').hide();
+    $('#rolesSection').show();
+  }
+});
+
+// ============ KHỞI TẠO ============
+$(document).ready(function() {
+  loadRoles();
+  loadUsers();
+});
+</script>
+
+</body>
+</html>
