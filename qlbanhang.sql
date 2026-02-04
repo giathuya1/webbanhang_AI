@@ -179,6 +179,35 @@ INSERT INTO `products` (`id`, `name`, `price`, `stock`, `category_id`, `created_
 -- --------------------------------------------------------
 
 --
+-- Cấu trúc bảng cho bảng `images`
+--
+
+CREATE TABLE `images` (
+  `id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `image_url` varchar(255) NOT NULL,
+  `is_primary` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `images`
+--
+
+INSERT INTO `images` (`id`, `product_id`, `image_url`, `is_primary`, `created_at`) VALUES
+(1, 1, 'uploads/products/dell-xps-13-1.jpg', 1, '2026-02-04 01:59:46'),
+(2, 1, 'uploads/products/dell-xps-13-2.jpg', 0, '2026-02-04 01:59:46'),
+(3, 2, 'uploads/products/macbook-air-m1-1.jpg', 1, '2026-02-04 01:59:46'),
+(4, 2, 'uploads/products/macbook-air-m1-2.jpg', 0, '2026-02-04 01:59:46'),
+(5, 3, 'uploads/products/logitech-mx-master.jpg', 1, '2026-02-04 01:59:46'),
+(6, 4, 'uploads/products/keychron-k6.jpg', 1, '2026-02-04 01:59:46'),
+(7, 5, 'uploads/products/lg-27-inch.jpg', 1, '2026-02-04 01:59:46'),
+(8, 6, 'uploads/products/iphone-13-1.jpg', 1, '2026-02-04 01:59:46'),
+(9, 6, 'uploads/products/iphone-13-2.jpg', 0, '2026-02-04 01:59:46');
+
+-- --------------------------------------------------------
+
+--
 -- Cấu trúc bảng cho bảng `promotions`
 --
 
@@ -358,6 +387,13 @@ ALTER TABLE `products`
   ADD KEY `category_id` (`category_id`);
 
 --
+-- Chỉ mục cho bảng `images`
+--
+ALTER TABLE `images`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `product_id` (`product_id`);
+
+--
 -- Chỉ mục cho bảng `promotions`
 --
 ALTER TABLE `promotions`
@@ -450,6 +486,12 @@ ALTER TABLE `products`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
+-- AUTO_INCREMENT cho bảng `images`
+--
+ALTER TABLE `images`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
 -- AUTO_INCREMENT cho bảng `promotions`
 --
 ALTER TABLE `promotions`
@@ -527,6 +569,12 @@ ALTER TABLE `payments`
 --
 ALTER TABLE `products`
   ADD CONSTRAINT `products_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
+
+--
+-- Các ràng buộc cho bảng `images`
+--
+ALTER TABLE `images`
+  ADD CONSTRAINT `images_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE;
 
 --
 -- Các ràng buộc cho bảng `promotion_products`

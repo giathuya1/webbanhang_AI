@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Cửa hàng - Sản phẩm</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<style>
+:root {
+  --primary: #667eea;
+  --secondary: #764ba2;
+}
+body { background: #f8f9fa; }
+.navbar-custom {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+}
+.navbar-custom .navbar-brand, .navbar-custom .nav-link { color: #fff !important; }
+.navbar-custom .nav-link:hover { color: #ddd !important; }
+
+/* Card sản phẩm */
+.product-card {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+  height: 100%;
+}
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+.product-img {
+  height: 200px;
+  object-fit: cover;
+  background: #f0f0f0;
+}
+.product-category {
+  font-size: 12px;
+  color: #6c757d;
+}
+.product-name {
+  font-weight: 600;
+  color: #333;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 48px;
+}
+.product-price {
+  color: #e74c3c;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+.product-stock {
+  font-size: 12px;
+}
+.btn-cart {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  border: none;
+  color: #fff;
+}
+.btn-cart:hover {
+  background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
+  color: #fff;
+}
+
+/* Sidebar */
+.sidebar-title {
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 10px;
+}
+.category-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+.category-item:hover, .category-item.active {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: #fff;
+}
+
+/* Giỏ hàng */
+.cart-badge {
+  position: absolute;
+  top: -5px;
+  right: -10px;
+  background: #e74c3c;
+  color: #fff;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cart-icon { position: relative; }
+.offcanvas-cart { width: 400px !important; }
+.cart-item {
+  border-bottom: 1px solid #eee;
+  padding: 15px 0;
+}
+.cart-item-img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.cart-item-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+.cart-item-price {
+  color: #e74c3c;
+  font-weight: bold;
+}
+.cart-total {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #e74c3c;
+}
+.btn-checkout {
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  border: none;
+  color: #fff;
+}
+.btn-checkout:hover {
+  background: linear-gradient(135deg, #219a52 0%, #27ae60 100%);
+  color: #fff;
+}
+.qty-input {
+  width: 50px;
+  text-align: center;
+}
+
+/* Search */
+.search-box {
+  position: relative;
+}
+.search-box input {
+  border-radius: 25px;
+  padding-left: 40px;
+}
+.search-box .search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+}
+
+/* Pagination */
+.pagination .page-link {
+  color: var(--primary);
+}
+.pagination .page-item.active .page-link {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+/* No image placeholder */
+.no-image {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  color: #aaa;
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="#"><i class="fa fa-store me-2"></i>TechShop</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="#">Trang chủ</a></li>
+        <li class="nav-item"><a class="nav-link active" href="#">Sản phẩm</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Khuyến mãi</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Liên hệ</a></li>
+      </ul>
+      <div class="d-flex align-items-center">
+        <a href="#" class="nav-link cart-icon" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
+          <i class="fa fa-shopping-cart fa-lg"></i>
+          <span class="cart-badge" id="cartCount">0</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="container py-4">
+  <div class="row">
+    <!-- SIDEBAR -->
+    <div class="col-lg-3 mb-4">
+      <div class="card p-3">
+        <h6 class="sidebar-title"><i class="fa fa-filter me-2"></i>Danh mục</h6>
+        <div class="mt-3" id="categoryList">
+          <div class="category-item active" data-id="all">
+            <i class="fa fa-th-large me-2"></i>Tất cả sản phẩm
+          </div>
+        </div>
+      </div>
+      
+      <div class="card p-3 mt-3">
+        <h6 class="sidebar-title"><i class="fa fa-search me-2"></i>Tìm kiếm</h6>
+        <div class="search-box mt-3">
+          <i class="fa fa-search search-icon"></i>
+          <input type="text" class="form-control" id="searchInput" placeholder="Tìm sản phẩm...">
+        </div>
+      </div>
+    </div>
+    
+    <!-- PRODUCTS -->
+    <div class="col-lg-9">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0"><i class="fa fa-box me-2"></i>Sản phẩm (<span id="totalProducts">0</span>)</h5>
+      </div>
+      
+      <div class="row g-4" id="productList">
+        <!-- Products loaded here -->
+      </div>
+      
+      <!-- Pagination -->
+      <nav class="mt-4">
+        <ul class="pagination justify-content-center" id="pagination"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<!-- CART OFFCANVAS -->
+<div class="offcanvas offcanvas-end offcanvas-cart" tabindex="-1" id="cartOffcanvas">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title"><i class="fa fa-shopping-cart me-2"></i>Giỏ hàng</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div id="cartItems">
+      <!-- Cart items loaded here -->
+    </div>
+    <div id="cartEmpty" class="text-center text-muted py-5">
+      <i class="fa fa-shopping-basket fa-3x mb-3"></i>
+      <p>Giỏ hàng trống</p>
+    </div>
+  </div>
+  <div class="offcanvas-footer border-top p-3" id="cartFooter" style="display:none;">
+    <div class="d-flex justify-content-between mb-3">
+      <span>Tổng tiền:</span>
+      <span class="cart-total" id="cartTotal">0đ</span>
+    </div>
+    <button class="btn btn-checkout w-100 py-2">
+      <i class="fa fa-credit-card me-2"></i>Thanh toán
+    </button>
+    <button class="btn btn-outline-danger w-100 mt-2" id="btnClearCart">
+      <i class="fa fa-trash me-2"></i>Xóa giỏ hàng
+    </button>
+  </div>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div class="modal fade" id="productModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Chi tiết sản phẩm</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-5">
+            <img id="modalImage" src="" class="img-fluid rounded" style="width:100%; height:300px; object-fit:cover;">
+            <div class="d-flex gap-2 mt-2" id="modalThumbnails"></div>
+          </div>
+          <div class="col-md-7">
+            <span class="badge bg-secondary mb-2" id="modalCategory"></span>
+            <h4 id="modalName"></h4>
+            <p class="product-price fs-3" id="modalPrice"></p>
+            <p class="text-muted" id="modalStock"></p>
+            <hr>
+            <div class="d-flex align-items-center gap-3">
+              <label>Số lượng:</label>
+              <div class="input-group" style="width:130px;">
+                <button class="btn btn-outline-secondary" type="button" id="modalQtyMinus">-</button>
+                <input type="number" class="form-control text-center" id="modalQty" value="1" min="1">
+                <button class="btn btn-outline-secondary" type="button" id="modalQtyPlus">+</button>
+              </div>
+            </div>
+            <button class="btn btn-cart w-100 mt-4 py-2" id="modalAddCart">
+              <i class="fa fa-cart-plus me-2"></i>Thêm vào giỏ hàng
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+const API_URL = 'api';
+
+// State
+let products = [];
+let categories = [];
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
+let currentPage = 1;
+let totalPages = 1;
+let currentCategory = 'all';
+let searchQuery = '';
+let currentProduct = null;
+
+// Format tiền VNĐ
+function formatPrice(price) {
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+}
+
+// Load Categories
+function loadCategories() {
+  $.get(`${API_URL}/categories.php`, function(res) {
+    if (res.success) {
+      categories = res.data;
+      let html = `<div class="category-item ${currentCategory === 'all' ? 'active' : ''}" data-id="all">
+        <i class="fa fa-th-large me-2"></i>Tất cả sản phẩm
+      </div>`;
+      categories.forEach(cat => {
+        html += `<div class="category-item ${currentCategory == cat.id ? 'active' : ''}" data-id="${cat.id}">
+          <i class="fa fa-tag me-2"></i>${cat.name} <span class="text-muted">(${cat.product_count})</span>
+        </div>`;
+      });
+      $('#categoryList').html(html);
+    }
+  });
+}
+
+// Load Products
+function loadProducts() {
+  const params = new URLSearchParams({
+    page: currentPage,
+    limit: 8,
+    search: searchQuery,
+    category_id: currentCategory
+  });
+  
+  $.get(`${API_URL}/products.php?${params}`, function(res) {
+    if (res.success) {
+      products = res.data;
+      totalPages = res.pagination.total_pages;
+      $('#totalProducts').text(res.pagination.total_records);
+      renderProducts();
+      renderPagination();
+    }
+  });
+}
+
+// Render Products
+function renderProducts() {
+  if (products.length === 0) {
+    $('#productList').html(`
+      <div class="col-12 text-center py-5">
+        <i class="fa fa-box-open fa-4x text-muted mb-3"></i>
+        <p class="text-muted">Không tìm thấy sản phẩm nào</p>
+      </div>
+    `);
+    return;
+  }
+  
+  let html = '';
+  products.forEach(product => {
+    const imgSrc = product.image ? product.image : '';
+    const imgHtml = imgSrc 
+      ? `<img src="${imgSrc}" class="card-img-top product-img" alt="${product.name}">`
+      : `<div class="no-image"><i class="fa fa-image fa-3x"></i></div>`;
+    
+    const stockClass = product.stock > 0 ? 'text-success' : 'text-danger';
+    const stockText = product.stock > 0 ? `Còn ${product.stock} sản phẩm` : 'Hết hàng';
+    
+    html += `
+      <div class="col-md-6 col-lg-4 col-xl-3">
+        <div class="card product-card">
+          <div class="position-relative" style="cursor:pointer;" onclick="showProductDetail(${product.id})">
+            ${imgHtml}
+          </div>
+          <div class="card-body">
+            <p class="product-category mb-1">${product.category_name || 'Chưa phân loại'}</p>
+            <h6 class="product-name">${product.name}</h6>
+            <p class="product-price mb-1">${formatPrice(product.price)}</p>
+            <p class="product-stock ${stockClass} mb-2">${stockText}</p>
+            <button class="btn btn-cart btn-sm w-100" onclick="addToCart(${product.id})" ${product.stock <= 0 ? 'disabled' : ''}>
+              <i class="fa fa-cart-plus me-1"></i>Thêm giỏ hàng
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  $('#productList').html(html);
+}
+
+// Render Pagination
+function renderPagination() {
+  if (totalPages <= 1) {
+    $('#pagination').html('');
+    return;
+  }
+  
+  let html = `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+    <a class="page-link" href="#" data-page="${currentPage - 1}">«</a>
+  </li>`;
+  
+  for (let i = 1; i <= totalPages; i++) {
+    html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+      <a class="page-link" href="#" data-page="${i}">${i}</a>
+    </li>`;
+  }
+  
+  html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+    <a class="page-link" href="#" data-page="${currentPage + 1}">»</a>
+  </li>`;
+  
+  $('#pagination').html(html);
+}
+
+// Show Product Detail
+function showProductDetail(id) {
+  $.get(`${API_URL}/products.php?id=${id}`, function(res) {
+    if (res.success) {
+      currentProduct = res.data;
+      const p = currentProduct;
+      
+      $('#modalName').text(p.name);
+      $('#modalCategory').text(p.category_name || 'Chưa phân loại');
+      $('#modalPrice').text(formatPrice(p.price));
+      $('#modalStock').html(`<i class="fa fa-warehouse me-1"></i>Kho: ${p.stock} sản phẩm`);
+      $('#modalQty').val(1).attr('max', p.stock);
+      
+      // Images
+      if (p.images && p.images.length > 0) {
+        $('#modalImage').attr('src', p.images[0].image_url);
+        let thumbs = '';
+        p.images.forEach((img, idx) => {
+          thumbs += `<img src="${img.image_url}" class="rounded" style="width:60px;height:60px;object-fit:cover;cursor:pointer;${idx===0?'border:2px solid var(--primary);':''}" onclick="changeModalImage(this, '${img.image_url}')">`;
+        });
+        $('#modalThumbnails').html(thumbs);
+      } else {
+        $('#modalImage').attr('src', 'https://via.placeholder.com/400x300?text=No+Image');
+        $('#modalThumbnails').html('');
+      }
+      
+      $('#productModal').modal('show');
+    }
+  });
+}
+
+function changeModalImage(el, src) {
+  $('#modalImage').attr('src', src);
+  $('#modalThumbnails img').css('border', 'none');
+  $(el).css('border', '2px solid var(--primary)');
+}
+
+// Cart Functions
+function addToCart(productId, qty = 1) {
+  const product = products.find(p => p.id == productId) || currentProduct;
+  if (!product) return;
+  
+  const existingItem = cart.find(item => item.id == productId);
+  if (existingItem) {
+    existingItem.quantity += qty;
+  } else {
+    cart.push({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image || (product.images && product.images[0] ? product.images[0].image_url : ''),
+      quantity: qty
+    });
+  }
+  
+  saveCart();
+  renderCart();
+  
+  // Toast notification
+  showToast(`Đã thêm "${product.name}" vào giỏ hàng!`);
+}
+
+function removeFromCart(productId) {
+  cart = cart.filter(item => item.id != productId);
+  saveCart();
+  renderCart();
+}
+
+function updateCartQty(productId, qty) {
+  const item = cart.find(item => item.id == productId);
+  if (item) {
+    item.quantity = Math.max(1, qty);
+    saveCart();
+    renderCart();
+  }
+}
+
+function clearCart() {
+  if (confirm('Bạn có chắc muốn xóa toàn bộ giỏ hàng?')) {
+    cart = [];
+    saveCart();
+    renderCart();
+  }
+}
+
+function saveCart() {
+  localStorage.setItem('cart', JSON.stringify(cart));
+}
+
+function renderCart() {
+  const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+  $('#cartCount').text(count);
+  
+  if (cart.length === 0) {
+    $('#cartItems').html('');
+    $('#cartEmpty').show();
+    $('#cartFooter').hide();
+    return;
+  }
+  
+  $('#cartEmpty').hide();
+  $('#cartFooter').show();
+  
+  let total = 0;
+  let html = '';
+  cart.forEach(item => {
+    const subtotal = item.price * item.quantity;
+    total += subtotal;
+    
+    const imgSrc = item.image || 'https://via.placeholder.com/60x60?text=No+Image';
+    
+    html += `
+      <div class="cart-item d-flex gap-3">
+        <img src="${imgSrc}" class="cart-item-img">
+        <div class="flex-grow-1">
+          <p class="cart-item-name mb-1">${item.name}</p>
+          <p class="cart-item-price mb-1">${formatPrice(item.price)}</p>
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-secondary" onclick="updateCartQty(${item.id}, ${item.quantity - 1})">-</button>
+            <span class="qty-input">${item.quantity}</span>
+            <button class="btn btn-sm btn-outline-secondary" onclick="updateCartQty(${item.id}, ${item.quantity + 1})">+</button>
+            <button class="btn btn-sm btn-outline-danger ms-auto" onclick="removeFromCart(${item.id})">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  
+  $('#cartItems').html(html);
+  $('#cartTotal').text(formatPrice(total));
+}
+
+function showToast(message) {
+  // Simple toast
+  const toast = $(`<div class="position-fixed bottom-0 end-0 p-3" style="z-index:9999;">
+    <div class="toast show bg-success text-white">
+      <div class="toast-body"><i class="fa fa-check-circle me-2"></i>${message}</div>
+    </div>
+  </div>`);
+  $('body').append(toast);
+  setTimeout(() => toast.remove(), 2000);
+}
+
+// Event Handlers
+$(document).on('click', '.category-item', function() {
+  $('.category-item').removeClass('active');
+  $(this).addClass('active');
+  currentCategory = $(this).data('id');
+  currentPage = 1;
+  loadProducts();
+});
+
+$(document).on('click', '#pagination .page-link', function(e) {
+  e.preventDefault();
+  const page = $(this).data('page');
+  if (page >= 1 && page <= totalPages) {
+    currentPage = page;
+    loadProducts();
+  }
+});
+
+$('#searchInput').on('keyup', function(e) {
+  if (e.key === 'Enter') {
+    searchQuery = $(this).val().trim();
+    currentPage = 1;
+    loadProducts();
+  }
+});
+
+$('#modalQtyMinus').on('click', function() {
+  let val = parseInt($('#modalQty').val());
+  if (val > 1) $('#modalQty').val(val - 1);
+});
+
+$('#modalQtyPlus').on('click', function() {
+  let val = parseInt($('#modalQty').val());
+  let max = currentProduct ? currentProduct.stock : 99;
+  if (val < max) $('#modalQty').val(val + 1);
+});
+
+$('#modalAddCart').on('click', function() {
+  if (currentProduct) {
+    const qty = parseInt($('#modalQty').val());
+    addToCart(currentProduct.id, qty);
+    $('#productModal').modal('hide');
+  }
+});
+
+$('#btnClearCart').on('click', clearCart);
+
+// Init
+$(document).ready(function() {
+  loadCategories();
+  loadProducts();
+  renderCart();
+});
+</script>
+
+</body>
+</html>
