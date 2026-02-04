@@ -62,7 +62,7 @@ function getUsers() {
     
     $users = [];
     while ($row = $result->fetch_assoc()) {
-        unset($row['password']); // Không trả về password
+        unset($row['password']);
         $users[] = $row;
     }
     
@@ -78,7 +78,6 @@ function addUser() {
     
     $data = json_decode(file_get_contents("php://input"), true);
     
-    // Validate dữ liệu
     if (empty($data['username']) || empty($data['password'])) {
         http_response_code(400);
         echo json_encode(["success" => false, "message" => "Username và password là bắt buộc"]);
@@ -86,6 +85,7 @@ function addUser() {
     }
     
     $username = trim($data['username']);
+    $fullname = isset($data['fullname']) ? trim($data['fullname']) : '';
     $password = password_hash($data['password'], PASSWORD_DEFAULT);
     $role_id = isset($data['role_id']) ? (int)$data['role_id'] : 1;
     $status = isset($data['status']) ? (int)$data['status'] : 1;
@@ -103,10 +103,9 @@ function addUser() {
         return;
     }
     
-    // Thêm user
-    $sql = "INSERT INTO users (username, password, role_id, status, created_at) VALUES (?, ?, ?, ?, NOW())";
+    $sql = "INSERT INTO users (username, fullname, password, role_id, status, created_at) VALUES (?, ?, ?, ?, ?, NOW())";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssii", $username, $password, $role_id, $status);
+    $stmt->bind_param("sssii", $username, $fullname, $password, $role_id, $status);
     
     if ($stmt->execute()) {
         $newId = $conn->insert_id;
@@ -135,11 +134,11 @@ function updateUser() {
     
     $id = (int)$data['id'];
     $username = isset($data['username']) ? trim($data['username']) : null;
+    $fullname = isset($data['fullname']) ? trim($data['fullname']) : null;
     $role_id = isset($data['role_id']) ? (int)$data['role_id'] : null;
     $status = isset($data['status']) ? (int)$data['status'] : null;
     $password = isset($data['password']) && !empty($data['password']) ? $data['password'] : null;
     
-    // Kiểm tra username trùng (nếu có thay đổi)
     if ($username) {
         $checkSql = "SELECT id FROM users WHERE username = ? AND id != ?";
         $checkStmt = $conn->prepare($checkSql);
@@ -154,7 +153,6 @@ function updateUser() {
         }
     }
     
-    // Build query động
     $updates = [];
     $params = [];
     $types = "";
@@ -162,6 +160,12 @@ function updateUser() {
     if ($username) {
         $updates[] = "username = ?";
         $params[] = $username;
+        $types .= "s";
+    }
+    
+    if ($fullname) {
+        $updates[] = "fullname = ?";
+        $params[] = $fullname;
         $types .= "s";
     }
     
@@ -214,62 +218,100 @@ function deleteUser() {
     $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
     
     if ($id <= 0) {
-        http_response_code(400);
         echo json_encode(["success" => false, "message" => "ID không hợp lệ"]);
         return;
     }
     
-    // Kiểm tra user có đơn hàng không
-    $checkOrdersSql = "SELECT COUNT(*) as count FROM orders WHERE user_id = ?";
-    $checkStmt = $conn->prepare($checkOrdersSql);
-    $checkStmt->bind_param("i", $id);
-    $checkStmt->execute();
-    $checkResult = $checkStmt->get_result();
-    $row = $checkResult->fetch_assoc();
+    // Kiểm tra user có tồn tại không
+    $checkUserSql = "SELECT username FROM users WHERE id = ?";
+    $checkUserStmt = $conn->prepare($checkUserSql);
+    $checkUserStmt->bind_param("i", $id);
+    $checkUserStmt->execute();
+    $userResult = $checkUserStmt->get_result();
     
-    if ($row['count'] > 0) {
-        http_response_code(400);
-        echo json_encode([
-            "success" => false, 
-            "message" => "Không thể xóa! User này có " . $row['count'] . " đơn hàng. Hãy vô hiệu hóa thay vì xóa."
-        ]);
+    if ($userResult->num_rows === 0) {
+        echo json_encode(["success" => false, "message" => "Không tìm thấy user"]);
         return;
     }
     
-    // Kiểm tra user có hóa đơn không
-    $checkInvoicesSql = "SELECT COUNT(*) as count FROM invoices WHERE user_id = ?";
-    $checkStmt2 = $conn->prepare($checkInvoicesSql);
-    $checkStmt2->bind_param("i", $id);
-    $checkStmt2->execute();
-    $checkResult2 = $checkStmt2->get_result();
-    $row2 = $checkResult2->fetch_assoc();
+    // Bắt đầu transaction
+    $conn->begin_transaction();
     
-    if ($row2['count'] > 0) {
-        http_response_code(400);
-        echo json_encode([
-            "success" => false, 
-            "message" => "Không thể xóa! User này có " . $row2['count'] . " hóa đơn. Hãy vô hiệu hóa thay vì xóa."
-        ]);
-        return;
-    }
-    
-    $sql = "DELETE FROM users WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $id);
-    
-    if ($stmt->execute()) {
-        if ($stmt->affected_rows > 0) {
+    try {
+        // 1. Lấy danh sách order_id của user
+        $orderIds = [];
+        $getOrdersSql = "SELECT id FROM orders WHERE user_id = ?";
+        $getOrdersStmt = $conn->prepare($getOrdersSql);
+        $getOrdersStmt->bind_param("i", $id);
+        $getOrdersStmt->execute();
+        $ordersResult = $getOrdersStmt->get_result();
+        while ($row = $ordersResult->fetch_assoc()) {
+            $orderIds[] = $row['id'];
+        }
+        
+        // 2. Xóa dữ liệu liên quan đến orders
+        if (!empty($orderIds)) {
+            $orderIdsStr = implode(',', $orderIds);
+            
+            // Xóa payments
+            $conn->query("DELETE FROM payments WHERE order_id IN ($orderIdsStr)");
+            
+            // Xóa invoices
+            $conn->query("DELETE FROM invoices WHERE order_id IN ($orderIdsStr)");
+            
+            // Xóa order_items
+            $conn->query("DELETE FROM order_items WHERE order_id IN ($orderIdsStr)");
+            
+            // Xóa orders
+            $conn->query("DELETE FROM orders WHERE user_id = $id");
+        }
+        
+        // 3. Lấy danh sách import_order_id của user
+        $importOrderIds = [];
+        $getImportSql = "SELECT id FROM import_orders WHERE user_id = ?";
+        $getImportStmt = $conn->prepare($getImportSql);
+        $getImportStmt->bind_param("i", $id);
+        $getImportStmt->execute();
+        $importResult = $getImportStmt->get_result();
+        while ($row = $importResult->fetch_assoc()) {
+            $importOrderIds[] = $row['id'];
+        }
+        
+        // 4. Xóa dữ liệu liên quan đến import_orders
+        if (!empty($importOrderIds)) {
+            $importIdsStr = implode(',', $importOrderIds);
+            
+            // Xóa import_order_items
+            $conn->query("DELETE FROM import_order_items WHERE import_order_id IN ($importIdsStr)");
+            
+            // Xóa import_orders
+            $conn->query("DELETE FROM import_orders WHERE user_id = $id");
+        }
+        
+        // 5. Xóa user
+        $deleteUserSql = "DELETE FROM users WHERE id = ?";
+        $deleteUserStmt = $conn->prepare($deleteUserSql);
+        $deleteUserStmt->bind_param("i", $id);
+        $deleteUserStmt->execute();
+        
+        if ($deleteUserStmt->affected_rows > 0) {
+            // Commit transaction
+            $conn->commit();
             echo json_encode([
                 "success" => true,
-                "message" => "Xóa user thành công"
+                "message" => "Xóa user và tất cả dữ liệu liên quan thành công"
             ]);
         } else {
-            http_response_code(404);
-            echo json_encode(["success" => false, "message" => "Không tìm thấy user"]);
+            throw new Exception("Không thể xóa user");
         }
-    } else {
-        http_response_code(500);
-        echo json_encode(["success" => false, "message" => "Lỗi khi xóa user: " . $conn->error]);
+        
+    } catch (Exception $e) {
+        // Rollback nếu có lỗi
+        $conn->rollback();
+        echo json_encode([
+            "success" => false,
+            "message" => "Lỗi khi xóa: " . $e->getMessage()
+        ]);
     }
 }
 
