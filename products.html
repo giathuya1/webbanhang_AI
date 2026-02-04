@@ -392,12 +392,16 @@ function renderProducts() {
     html += `
       <div class="col-md-6 col-lg-4 col-xl-3">
         <div class="card product-card">
-          <div class="position-relative" style="cursor:pointer;" onclick="showProductDetail(${product.id})">
-            ${imgHtml}
-          </div>
+          <a href="product-detail.html?id=${product.id}" class="text-decoration-none">
+            <div class="position-relative">
+              ${imgHtml}
+            </div>
+          </a>
           <div class="card-body">
             <p class="product-category mb-1">${product.category_name || 'Chưa phân loại'}</p>
-            <h6 class="product-name">${product.name}</h6>
+            <h6 class="product-name">
+              <a href="product-detail.html?id=${product.id}" class="text-decoration-none text-dark">${product.name}</a>
+            </h6>
             <p class="product-price mb-1">${formatPrice(product.price)}</p>
             <p class="product-stock ${stockClass} mb-2">${stockText}</p>
             <button class="btn btn-cart btn-sm w-100" onclick="addToCart(${product.id})" ${product.stock <= 0 ? 'disabled' : ''}>
