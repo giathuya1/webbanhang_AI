@@ -10,6 +10,7 @@
 :root {
   --primary: #667eea;
   --secondary: #764ba2;
+  --star-color: #ffc107;
 }
 body { background: #f8f9fa; }
 .navbar-custom {
@@ -66,20 +67,6 @@ body { background: #f8f9fa; }
   font-weight: bold;
   color: #e74c3c;
 }
-.product-price-old {
-  font-size: 1.2rem;
-  color: #999;
-  text-decoration: line-through;
-  margin-left: 10px;
-}
-.discount-badge {
-  background: #e74c3c;
-  color: #fff;
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 14px;
-  margin-left: 10px;
-}
 .stock-status {
   font-size: 14px;
   padding: 5px 15px;
@@ -87,6 +74,25 @@ body { background: #f8f9fa; }
 }
 .stock-in { background: #d4edda; color: #155724; }
 .stock-out { background: #f8d7da; color: #721c24; }
+
+/* Rating Stars */
+.stars { color: var(--star-color); }
+.stars .fa-star { margin-right: 2px; }
+.rating-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.rating-number {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+.rating-count {
+  color: #6c757d;
+  font-size: 14px;
+}
 
 /* Quantity */
 .qty-selector {
@@ -146,6 +152,113 @@ body { background: #f8f9fa; }
   border-bottom: 2px solid var(--primary);
 }
 
+/* Reviews Section */
+.review-stats {
+  display: flex;
+  gap: 30px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+.review-avg {
+  text-align: center;
+  min-width: 120px;
+}
+.review-avg-number {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #333;
+}
+.review-avg-stars {
+  color: var(--star-color);
+  font-size: 1.2rem;
+}
+.review-bars {
+  flex: 1;
+}
+.review-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+.review-bar-label {
+  width: 60px;
+  font-size: 14px;
+}
+.review-bar {
+  flex: 1;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.review-bar-fill {
+  height: 100%;
+  background: var(--star-color);
+  border-radius: 4px;
+}
+.review-bar-count {
+  width: 30px;
+  font-size: 14px;
+  color: #666;
+}
+
+/* Review Item */
+.review-item {
+  padding: 20px 0;
+  border-bottom: 1px solid #eee;
+}
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.review-author {
+  font-weight: 600;
+  color: #333;
+}
+.review-date {
+  font-size: 12px;
+  color: #999;
+}
+.review-stars {
+  color: var(--star-color);
+  margin-bottom: 8px;
+}
+.review-comment {
+  color: #555;
+  line-height: 1.6;
+}
+
+/* Review Form */
+.review-form {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+.star-rating {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+.star-rating input {
+  display: none;
+}
+.star-rating label {
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #ddd;
+  padding: 0 5px;
+}
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input:checked ~ label {
+  color: var(--star-color);
+}
+
 /* Related Products */
 .related-title {
   font-size: 1.5rem;
@@ -182,6 +295,10 @@ body { background: #f8f9fa; }
   color: #e74c3c;
   font-weight: bold;
   font-size: 1.1rem;
+}
+.product-card-rating {
+  font-size: 12px;
+  color: var(--star-color);
 }
 
 /* Cart Badge */
@@ -280,9 +397,7 @@ body { background: #f8f9fa; }
       <div class="col-lg-5 mb-4">
         <div class="card p-3">
           <img id="mainImage" src="" alt="" class="main-image">
-          <div class="thumbnail-list" id="thumbnailList">
-            <!-- Thumbnails loaded here -->
-          </div>
+          <div class="thumbnail-list" id="thumbnailList"></div>
         </div>
       </div>
 
@@ -292,10 +407,15 @@ body { background: #f8f9fa; }
           <span class="product-category" id="productCategory"></span>
           <h1 class="product-title mt-2" id="productName"></h1>
           
+          <!-- Rating Summary -->
+          <div class="rating-summary">
+            <span class="stars" id="productStars"></span>
+            <span class="rating-number" id="productRating">0</span>
+            <span class="rating-count">(<span id="reviewCount">0</span> đánh giá)</span>
+          </div>
+          
           <div class="d-flex align-items-center mt-3">
             <span class="product-price" id="productPrice"></span>
-            <span class="product-price-old" id="productOldPrice"></span>
-            <span class="discount-badge" id="discountBadge" style="display:none;"></span>
           </div>
 
           <div class="mt-3">
@@ -353,7 +473,7 @@ body { background: #f8f9fa; }
       </div>
     </div>
 
-    <!-- Tabs: Description -->
+    <!-- Tabs: Description & Reviews -->
     <div class="card mt-4">
       <div class="card-body">
         <ul class="nav nav-tabs" id="productTabs">
@@ -361,27 +481,62 @@ body { background: #f8f9fa; }
             <a class="nav-link active" data-bs-toggle="tab" href="#tabDescription">Mô tả sản phẩm</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="tab" href="#tabSpecs">Thông số kỹ thuật</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="tab" href="#tabReviews">Đánh giá</a>
+            <a class="nav-link" data-bs-toggle="tab" href="#tabReviews">
+              Đánh giá <span class="badge bg-primary" id="reviewBadge">0</span>
+            </a>
           </li>
         </ul>
         <div class="tab-content p-4">
+          <!-- Description Tab -->
           <div class="tab-pane fade show active" id="tabDescription">
-            <p id="productDescription">Đang cập nhật mô tả sản phẩm...</p>
+            <div id="productDescription"></div>
           </div>
-          <div class="tab-pane fade" id="tabSpecs">
-            <table class="table table-bordered">
-              <tbody id="productSpecs">
-                <tr><td>Thương hiệu</td><td id="specBrand">-</td></tr>
-                <tr><td>Danh mục</td><td id="specCategory">-</td></tr>
-                <tr><td>Tình trạng</td><td id="specStock">-</td></tr>
-              </tbody>
-            </table>
-          </div>
+          
+          <!-- Reviews Tab -->
           <div class="tab-pane fade" id="tabReviews">
-            <p class="text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>
+            <!-- Review Stats -->
+            <div class="review-stats" id="reviewStats">
+              <div class="review-avg">
+                <div class="review-avg-number" id="avgRating">0</div>
+                <div class="review-avg-stars" id="avgStars"></div>
+                <div class="text-muted small"><span id="totalReviews">0</span> đánh giá</div>
+              </div>
+              <div class="review-bars" id="reviewBars"></div>
+            </div>
+            
+            <!-- Review Form -->
+            <div class="review-form mt-4">
+              <h6><i class="fa fa-pen me-2"></i>Viết đánh giá của bạn</h6>
+              <form id="reviewForm">
+                <div class="mb-3">
+                  <label class="form-label">Họ tên</label>
+                  <input type="text" class="form-control" id="reviewName" placeholder="Nhập họ tên" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Đánh giá</label>
+                  <div class="star-rating">
+                    <input type="radio" name="rating" value="5" id="star5"><label for="star5"><i class="fa fa-star"></i></label>
+                    <input type="radio" name="rating" value="4" id="star4"><label for="star4"><i class="fa fa-star"></i></label>
+                    <input type="radio" name="rating" value="3" id="star3"><label for="star3"><i class="fa fa-star"></i></label>
+                    <input type="radio" name="rating" value="2" id="star2"><label for="star2"><i class="fa fa-star"></i></label>
+                    <input type="radio" name="rating" value="1" id="star1"><label for="star1"><i class="fa fa-star"></i></label>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Nhận xét</label>
+                  <textarea class="form-control" id="reviewComment" rows="3" placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                  <i class="fa fa-paper-plane me-2"></i>Gửi đánh giá
+                </button>
+              </form>
+            </div>
+            
+            <!-- Review List -->
+            <div class="mt-4">
+              <h6><i class="fa fa-comments me-2"></i>Tất cả đánh giá</h6>
+              <div id="reviewList"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -390,9 +545,7 @@ body { background: #f8f9fa; }
     <!-- Related Products -->
     <div class="mt-5">
       <h4 class="related-title mb-4">Sản phẩm tương tự</h4>
-      <div class="row g-4" id="relatedProducts">
-        <!-- Related products loaded here -->
-      </div>
+      <div class="row g-4" id="relatedProducts"></div>
     </div>
   </div>
 </div>
@@ -412,6 +565,8 @@ const API_URL = 'api';
 
 // State
 let product = null;
+let reviews = [];
+let reviewStats = null;
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
 // Get product ID from URL
@@ -423,6 +578,27 @@ function getProductId() {
 // Format price
 function formatPrice(price) {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+}
+
+// Generate star HTML
+function generateStars(rating) {
+  let html = '';
+  for (let i = 1; i <= 5; i++) {
+    if (i <= rating) {
+      html += '<i class="fa fa-star"></i>';
+    } else if (i - 0.5 <= rating) {
+      html += '<i class="fa fa-star-half-alt"></i>';
+    } else {
+      html += '<i class="far fa-star"></i>';
+    }
+  }
+  return html;
+}
+
+// Format date
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 // Load Product Detail
@@ -437,6 +613,7 @@ function loadProductDetail() {
     if (res.success && res.data) {
       product = res.data;
       renderProductDetail();
+      loadReviews();
       loadRelatedProducts();
       $('#loading').hide();
       $('#productDetail').show();
@@ -444,21 +621,13 @@ function loadProductDetail() {
       alert('Không tìm thấy sản phẩm!');
       window.location.href = 'products.html';
     }
-  }).fail(function() {
-    alert('Lỗi khi tải sản phẩm!');
-    window.location.href = 'products.html';
   });
 }
 
 // Render Product Detail
 function renderProductDetail() {
-  // Title
   document.title = product.name + ' - TechShop';
-  
-  // Breadcrumb
   $('#breadcrumbCategory').text(product.category_name || 'Sản phẩm');
-  
-  // Basic Info
   $('#productName').text(product.name);
   $('#productCategory').html(`<i class="fa fa-tag me-1"></i>${product.category_name || 'Chưa phân loại'}`);
   $('#productPrice').text(formatPrice(product.price));
@@ -478,7 +647,6 @@ function renderProductDetail() {
   // Images
   if (product.images && product.images.length > 0) {
     $('#mainImage').attr('src', product.images[0].image_url);
-    
     let thumbHtml = '';
     product.images.forEach((img, idx) => {
       thumbHtml += `<img src="${img.image_url}" class="thumbnail-item ${idx === 0 ? 'active' : ''}" onclick="changeImage(this, '${img.image_url}')">`;
@@ -488,10 +656,6 @@ function renderProductDetail() {
     $('#mainImage').attr('src', 'https://via.placeholder.com/400x400?text=No+Image');
     $('#thumbnailList').html('');
   }
-  
-  // Specs
-  $('#specCategory').text(product.category_name || '-');
-  $('#specStock').text(product.stock > 0 ? 'Còn hàng' : 'Hết hàng');
   
   // Description
   $('#productDescription').html(`
@@ -510,6 +674,112 @@ function renderProductDetail() {
   `);
 }
 
+// Load Reviews
+function loadReviews() {
+  const productId = getProductId();
+  
+  $.get(`${API_URL}/reviews.php?product_id=${productId}`, function(res) {
+    if (res.success) {
+      reviews = res.data;
+      reviewStats = res.stats;
+      renderReviewStats();
+      renderReviewList();
+    }
+  });
+}
+
+// Render Review Stats
+function renderReviewStats() {
+  const stats = reviewStats;
+  
+  // Update header rating
+  $('#productStars').html(generateStars(stats.avg_rating));
+  $('#productRating').text(stats.avg_rating.toFixed(1));
+  $('#reviewCount').text(stats.total_reviews);
+  $('#reviewBadge').text(stats.total_reviews);
+  
+  // Avg rating
+  $('#avgRating').text(stats.avg_rating.toFixed(1));
+  $('#avgStars').html(generateStars(stats.avg_rating));
+  $('#totalReviews').text(stats.total_reviews);
+  
+  // Bar chart
+  const total = stats.total_reviews || 1;
+  let barsHtml = '';
+  for (let i = 5; i >= 1; i--) {
+    const count = stats[`star_${i}`];
+    const percent = (count / total) * 100;
+    barsHtml += `
+      <div class="review-bar-item">
+        <span class="review-bar-label">${i} <i class="fa fa-star text-warning"></i></span>
+        <div class="review-bar">
+          <div class="review-bar-fill" style="width: ${percent}%"></div>
+        </div>
+        <span class="review-bar-count">${count}</span>
+      </div>
+    `;
+  }
+  $('#reviewBars').html(barsHtml);
+}
+
+// Render Review List
+function renderReviewList() {
+  if (reviews.length === 0) {
+    $('#reviewList').html('<p class="text-muted">Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá sản phẩm này!</p>');
+    return;
+  }
+  
+  let html = '';
+  reviews.forEach(review => {
+    const name = review.user_fullname || review.customer_name || 'Khách hàng';
+    html += `
+      <div class="review-item">
+        <div class="review-header">
+          <span class="review-author"><i class="fa fa-user-circle me-2"></i>${name}</span>
+          <span class="review-date">${formatDate(review.created_at)}</span>
+        </div>
+        <div class="review-stars">${generateStars(review.rating)}</div>
+        <p class="review-comment">${review.comment || '<em>Không có nhận xét</em>'}</p>
+      </div>
+    `;
+  });
+  $('#reviewList').html(html);
+}
+
+// Submit Review
+$('#reviewForm').on('submit', function(e) {
+  e.preventDefault();
+  
+  const rating = $('input[name="rating"]:checked').val();
+  if (!rating) {
+    alert('Vui lòng chọn số sao đánh giá!');
+    return;
+  }
+  
+  const data = {
+    product_id: getProductId(),
+    customer_name: $('#reviewName').val().trim(),
+    rating: parseInt(rating),
+    comment: $('#reviewComment').val().trim()
+  };
+  
+  $.ajax({
+    url: `${API_URL}/reviews.php`,
+    method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify(data),
+    success: function(res) {
+      if (res.success) {
+        alert('Cảm ơn bạn đã đánh giá!');
+        $('#reviewForm')[0].reset();
+        loadReviews();
+      } else {
+        alert(res.message);
+      }
+    }
+  });
+});
+
 // Change main image
 function changeImage(el, src) {
   $('#mainImage').attr('src', src);
@@ -523,7 +793,6 @@ function loadRelatedProducts() {
   
   $.get(`${API_URL}/products.php?category_id=${categoryId}&limit=4`, function(res) {
     if (res.success) {
-      // Filter out current product
       const related = res.data.filter(p => p.id != product.id).slice(0, 4);
       
       if (related.length === 0) {
@@ -630,7 +899,7 @@ $('#btnAddCart').on('click', addToCart);
 
 $('#btnBuyNow').on('click', function() {
   addToCart();
-  window.location.href = 'products.html'; // Redirect to cart/checkout
+  window.location.href = 'products.html';
 });
 
 // Init

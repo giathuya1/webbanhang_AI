@@ -208,6 +208,43 @@ INSERT INTO `images` (`id`, `product_id`, `image_url`, `is_primary`, `created_at
 -- --------------------------------------------------------
 
 --
+-- Cấu trúc bảng cho bảng `reviews`
+--
+
+CREATE TABLE `reviews` (
+  `id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `customer_name` varchar(100) DEFAULT NULL,
+  `rating` tinyint(1) NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  `comment` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `reviews`
+--
+
+INSERT INTO `reviews` (`id`, `product_id`, `user_id`, `customer_name`, `rating`, `comment`, `created_at`) VALUES
+(1, 1, NULL, 'Nguyễn Văn A', 5, 'Laptop rất đẹp, mỏng nhẹ, màn hình sắc nét. Rất hài lòng!', '2026-02-01 08:00:00'),
+(2, 1, NULL, 'Trần Thị B', 4, 'Sản phẩm tốt, giao hàng nhanh. Trừ 1 sao vì pin hơi yếu.', '2026-02-02 10:30:00'),
+(3, 1, NULL, 'Lê Minh C', 5, 'Xuất sắc! Đáng đồng tiền bát gạo.', '2026-02-03 14:15:00'),
+(4, 2, NULL, 'Phạm Văn D', 5, 'MacBook Air M1 quá tuyệt vời, pin trâu, mát lạnh.', '2026-02-01 09:00:00'),
+(5, 2, NULL, 'Hoàng Thị E', 5, 'Dùng cho công việc văn phòng rất mượt mà.', '2026-02-02 11:00:00'),
+(6, 2, NULL, 'Ngô Văn F', 4, 'Sản phẩm đẹp nhưng giá hơi cao.', '2026-02-03 16:00:00'),
+(7, 3, NULL, 'Đỗ Thị G', 5, 'Chuột rất êm tay, kết nối nhanh, dùng cả ngày không mỏi.', '2026-02-01 07:30:00'),
+(8, 3, NULL, 'Vũ Văn H', 4, 'Chuột tốt, đáng tiền. Chỉ tiếc là hơi nặng.', '2026-02-02 13:00:00'),
+(9, 4, NULL, 'Bùi Thị I', 5, 'Bàn phím gõ rất đã, đèn LED đẹp.', '2026-02-01 10:00:00'),
+(10, 4, NULL, 'Trịnh Văn K', 5, 'Keychron K6 là lựa chọn hoàn hảo cho dân văn phòng.', '2026-02-03 09:00:00'),
+(11, 5, NULL, 'Lý Thị L', 4, 'Màn hình đẹp, màu sắc chính xác. Chân đế hơi yếu.', '2026-02-02 08:00:00'),
+(12, 5, NULL, 'Mai Văn M', 5, 'Tuyệt vời cho công việc thiết kế đồ họa!', '2026-02-03 11:00:00'),
+(13, 6, NULL, 'Đinh Thị N', 5, 'iPhone 13 chụp ảnh đẹp, pin tốt hơn đời trước.', '2026-02-01 12:00:00'),
+(14, 6, NULL, 'Phan Văn O', 4, 'Máy mượt, camera ngon. Giá hơi cao so với Android.', '2026-02-02 15:00:00'),
+(15, 6, NULL, 'Hồ Thị P', 5, 'Rất hài lòng, sẽ ủng hộ shop dài dài!', '2026-02-03 17:00:00');
+
+-- --------------------------------------------------------
+
+--
 -- Cấu trúc bảng cho bảng `promotions`
 --
 
@@ -428,6 +465,14 @@ ALTER TABLE `users`
   ADD KEY `role_id` (`role_id`);
 
 --
+-- Chỉ mục cho bảng `reviews`
+--
+ALTER TABLE `reviews`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `product_id` (`product_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- AUTO_INCREMENT cho các bảng đã đổ
 --
 
@@ -516,6 +561,12 @@ ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
+-- AUTO_INCREMENT cho bảng `reviews`
+--
+ALTER TABLE `reviews`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
 -- Các ràng buộc cho các bảng đã đổ
 --
 
@@ -588,6 +639,14 @@ ALTER TABLE `promotion_products`
 --
 ALTER TABLE `users`
   ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`);
+
+--
+-- Các ràng buộc cho bảng `reviews`
+--
+ALTER TABLE `reviews`
+  ADD CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
